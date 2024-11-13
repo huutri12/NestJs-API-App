@@ -11,9 +11,6 @@ export class User {
   @Column({ name: 'full_name', type: 'varchar', nullable: true })
   fullName: string;
 
-  @Column({ name: 'refresh_token', type: 'varchar', nullable: true })
-  refreshToken: string;
-
 
   @Column({ name: 'email', type: 'varchar', nullable: true })
   email: string;

@@ -1,16 +1,14 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
-import { UserController } from './user.controller';
-import { UserService } from './user.service';
+import { UserController } from './controller/user.controller';
+import { UserService } from './service/user.service';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule, JwtService } from '@nestjs/jwt';
-import { BullModule } from '@nestjs/bullmq';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { AuthController } from '../auth/auth.controller';
-import { AuthService } from '../auth/auth.service';
+import { AuthController } from '../auth/controller/auth.controller';
+import { AuthService } from '../auth/service/auth.service';
 import { JwtStrategy } from 'src/jwt.strategy';
-import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [
@@ -23,7 +21,7 @@ import { AuthModule } from '../auth/auth.module';
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
-        secret: configService.get('SECRECTKEY'),
+        secret: configService.get('SECRETKEY'),
         signOptions: {
           expiresIn: configService.get('EXPIRESIN'),
         },

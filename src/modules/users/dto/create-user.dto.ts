@@ -1,4 +1,3 @@
-import { MESSAGES } from '@nestjs/core/constants';
 import { IsEmail, IsNotEmpty, IsString, Matches } from 'class-validator';
 
 export class CreateUserDto {
@@ -12,8 +11,6 @@ export class CreateUserDto {
     message: 'Email không hợp lệ, vui lòng nhập một địa chỉ email hợp lệ',
   })
   email: string;
-
-  refreshToken: string;
 
   fullName: string;
 
