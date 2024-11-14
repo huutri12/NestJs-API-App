@@ -15,7 +15,7 @@ export class UserService {
 
   // add user
   async create(createUserDto: CreateUserDto): Promise<User> {
-    createUserDto.password = await bcrypt.hash(createUserDto.password, 8);
+    createUserDto.password = await bcrypt.hash(createUserDto.password, 10);
 
     // check the user exists
     const userInDb = await this.userRepository.findOne({
