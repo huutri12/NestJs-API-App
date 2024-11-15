@@ -5,11 +5,12 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { UserService } from '../../users/service/user.service';
 import { User } from 'src/modules/users/entities/user.entity';
 import * as bcrypt from 'bcrypt';
+import { Role } from 'src/enums/role.enum';
+import { Roles } from 'src/modules/decorator/customize';
 
 @Injectable()
 export class AuthService {
-
-   // Lấy từ biến môi trường để bảo mật hơn
+  // Lấy từ biến môi trường để bảo mật hơn
   private readonly secretKey = process.env.SECRETKEY;
   constructor(
     private readonly userService: UserService,
@@ -26,6 +27,10 @@ export class AuthService {
   async login({ email, password }: LoginUserDto) {
     const user = await this.validateUserCredentials(email, password);
     return {
+      user: {
+        id: user.id,
+        email: user.email,
+      },
       accessToken: this.createAccessToken(user),
       refreshToken: this.createRefreshToken(user),
     };
@@ -39,7 +44,6 @@ export class AuthService {
       throw new HttpException('Invalid refresh token', HttpStatus.UNAUTHORIZED);
     }
   }
-
 
   // Kiểm tra thông tin đăng nhập của người dùng
   private async validateUserCredentials(
@@ -73,35 +77,38 @@ export class AuthService {
   }
 
   // Hàm hỗ trợ để tạo token với thời gian hết hạn tùy chỉnh
-private createToken(user: { id: number; email: string }, expiresIn: string): string {
-  try {
-      const payload = { 
-          email: user.email, 
-          sub: user.id,
-          iat: Math.floor(Date.now() / 1000)  // Thời gian phát hành token
+  private createToken(
+    user: { id: number; email: string },
+    expiresIn: string,
+  ): string {
+    try {
+      const payload = {
+        email: user.email,
+        sub: user.id,
+        iat: Math.floor(Date.now() / 1000), // Thời gian phát hành token
       };
 
       // Tạo token với thuật toán HS256
-      return this.jwtService.sign(payload, { 
-          secret: this.secretKey,  // Khóa bí mật từ biến môi trường
-          expiresIn, 
-          algorithm: 'HS256'  // Chỉ định thuật toán ký
+      return this.jwtService.sign(payload, {
+        secret: this.secretKey, // Khóa bí mật từ biến môi trường
+        expiresIn,
+        algorithm: 'HS256', // Chỉ định thuật toán ký
       });
-  } catch (error) {
+    } catch (error) {
       console.error('Error creating token:', error); // Ghi log lỗi
-      throw new Error('Unable to create token');  // Không cung cấp chi tiết lỗi cho người dùng
+      throw new Error('Unable to create token'); // Không cung cấp chi tiết lỗi cho người dùng
+    }
   }
-}
 
-// Hàm tạo Access Token với thời gian hết hạn 15 phút
-private createAccessToken(user: { id: number; email: string }): string {
-  return this.createToken(user, '15m');
-}
+  // Hàm tạo Access Token với thời gian hết hạn 15 phút
+  private createAccessToken(user: { id: number; email: string }): string {
+    return this.createToken(user, '15m');
+  }
 
-// Hàm tạo Refresh Token với thời gian hết hạn 7 ngày
-private createRefreshToken(user: { id: number; email: string }): string {
-  return this.createToken(user, '7d');
-}
+  // Hàm tạo Refresh Token với thời gian hết hạn 7 ngày
+  private createRefreshToken(user: { id: number; email: string }): string {
+    return this.createToken(user, '7d');
+  }
 
   // Kiểm tra Refresh Token và trả về payload nếu hợp lệ
   private verifyRefreshToken(refreshToken: string): any {

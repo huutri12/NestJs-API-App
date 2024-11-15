@@ -14,6 +14,8 @@ import { User } from '../entities/user.entity';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import { AuthGuard } from '@nestjs/passport';
+import { Roles } from 'src/modules/decorator/customize';
+import { Role } from 'src/enums/role.enum';
 
 @Controller('users')
 export class UserController {

@@ -1,4 +1,5 @@
 import { IsEmail, IsNotEmpty, IsString, Matches } from 'class-validator';
+import { Role } from 'src/enums/role.enum';
 
 export class CreateUserDto {
   @IsString()
@@ -21,4 +22,5 @@ export class CreateUserDto {
       'Tối thiểu tám ký tự, ít nhất một chữ cái, một số và một ký tự đặc biệt',
   })
   password: string;
+
 }
