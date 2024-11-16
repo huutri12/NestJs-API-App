@@ -6,17 +6,18 @@ import {
   Param,
   Put,
   Delete,
-  Req,
   UseGuards,
+  Request,
 } from '@nestjs/common';
 import { UserService } from '../service/user.service';
 import { User } from '../entities/user.entity';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
-import { AuthGuard } from '@nestjs/passport';
-import { Roles } from 'src/modules/decorator/customize';
+import { JwtAuthGuard } from 'src/modules/auth/guard/JwtAuthGuard';
+import { Roles } from 'src/common/decorator/customize';
 import { Role } from 'src/enums/role.enum';
 
+@UseGuards(JwtAuthGuard)
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -28,8 +29,11 @@ export class UserController {
   }
 
   // Route lấy tất cả users
+  @Get('protected')
   @Get()
-  findAll(): Promise<User[]> {
+  @Roles(Role.ADMIN)
+  findAll(@Request() req): Promise<User[]> {
+    console.log('User:', req.user);
     return this.userService.findAll();
   }
 

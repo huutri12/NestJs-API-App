@@ -11,11 +11,12 @@ import {
 import { AuthService } from '../service/auth.service';
 import { CreateUserDto } from '../../users/dto/create-user.dto';
 import { LoginUserDto } from '../../users/dto/login-user.dto';
-import { AuthGuard } from '@nestjs/passport';
 import { JwtAuthGuard } from '../guard/JwtAuthGuard';
-import { JwtStrategy } from 'src/jwt.strategy';
-import { Public } from 'src/modules/decorator/customize';
+import { Public, Roles } from 'src/common/decorator/customize';
+import { RolesGuard } from '../guard/RolesGuard';
+import { Role } from 'src/enums/role.enum';
 
+@UseGuards(JwtAuthGuard)
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
@@ -45,7 +46,8 @@ export class AuthController {
     return { message: 'Token refreshed', accessToken };
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Get('profile')
   async getProfile(@Req() req: any) {
     // req.user sẽ chứa thông tin người dùng từ payload của JWT

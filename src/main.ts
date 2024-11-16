@@ -14,11 +14,11 @@ async function bootstrap() {
     }),
   );
 
-  const reflector = app.get(Reflector);
-  app.useGlobalGuards(new JwtAuthGuard(reflector));
+  // const reflector = app.get(Reflector);
+  // app.useGlobalGuards(new JwtAuthGuard(reflector));
 
-  const reflectorRole = app.get(Reflector);
-  app.useGlobalGuards(new RolesGuard(reflectorRole));
+  // const reflectorRole = app.get(Reflector);
+  // app.useGlobalGuards(new RolesGuard(reflectorRole));
 
   await app.listen(process.env.PORT ?? 3000);
 }

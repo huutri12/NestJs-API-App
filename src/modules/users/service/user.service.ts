@@ -5,6 +5,7 @@ import { User } from '../entities/user.entity';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
+import { Role } from 'src/enums/role.enum';
 
 @Injectable()
 export class UserService {
@@ -25,10 +26,17 @@ export class UserService {
       throw new HttpException('User đã tồn tại', HttpStatus.BAD_REQUEST);
     }
 
-    const newUser = this.userRepository.create(createUserDto);
+    const newUser = this.userRepository.create({
+      username: createUserDto.username,
+      password: createUserDto.password,
+      email: createUserDto.email,
+      fullName: createUserDto.fullName,
+      role: createUserDto.role || Role.USER, 
+    });
 
-    // Save users to the database
+    // Save the user to the database
     return await this.userRepository.save(newUser);
+  
   }
 
   async findByEmail(email: string) {

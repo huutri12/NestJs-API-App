@@ -5,6 +5,7 @@ import { UserModule } from './modules/users/user.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { JwtAuthGuard } from './modules/auth/guard/JwtAuthGuard';
 import { APP_GUARD } from '@nestjs/core';
+import { RolesGuard } from './modules/auth/guard/RolesGuard';
 
 @Module({
   imports: [
@@ -28,6 +29,16 @@ import { APP_GUARD } from '@nestjs/core';
     }),
     UserModule,
     AuthModule,
+  ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard, // Đăng ký JWTAuthGuard làm Global Guard
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard, // Đăng ký RoleGuard nếu bạn muốn áp dụng cho tất cả các route
+    },
   ],
 })
 export class AppModule {}

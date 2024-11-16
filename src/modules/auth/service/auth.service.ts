@@ -5,8 +5,6 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { UserService } from '../../users/service/user.service';
 import { User } from 'src/modules/users/entities/user.entity';
 import * as bcrypt from 'bcrypt';
-import { Role } from 'src/enums/role.enum';
-import { Roles } from 'src/modules/decorator/customize';
 
 @Injectable()
 export class AuthService {
