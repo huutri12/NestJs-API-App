@@ -8,38 +8,51 @@ import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
-  // Lấy từ biến môi trường để bảo mật hơn
   private readonly secretKey = process.env.SECRETKEY;
+
   constructor(
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
   ) {}
 
+  // Đăng ký người dùng mới
   async register(createUserDto: CreateUserDto) {
     const user = await this.userService.create(createUserDto);
     return {
-      accessToken: this.createAccessToken(user),
+      message: 'Đăng ký thành công, vui lòng đăng nhập để tiếp tục.',
     };
   }
 
+  // Đăng nhập và trả về accessToken và refreshToken
   async login({ email, password }: LoginUserDto) {
     const user = await this.validateUserCredentials(email, password);
     return {
-      user: {
-        id: user.id,
-        email: user.email,
-      },
+      user: { id: user.id, email: user.email },
       accessToken: this.createAccessToken(user),
       refreshToken: this.createRefreshToken(user),
     };
   }
 
+  // Làm mới accessToken từ refreshToken
   async refreshAccessToken(refreshToken: string) {
     try {
       const { email, sub: userId } = this.verifyRefreshToken(refreshToken);
-      return this.createAccessToken({ id: userId, email });
+      const user = await this.userService.findOne(userId); // Tìm người dùng
+      if (!user) {
+        throw new HttpException(
+          'Người dùng không tồn tại',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+      return {
+        accessToken: this.createAccessToken(user),
+        refreshToken: this.createRefreshToken(user), // Cấp lại refresh token nếu cần
+      };
     } catch (error) {
-      throw new HttpException('Invalid refresh token', HttpStatus.UNAUTHORIZED);
+      throw new HttpException(
+        'Refresh token không hợp lệ hoặc đã hết hạn',
+        HttpStatus.UNAUTHORIZED,
+      );
     }
   }
 
@@ -53,15 +66,16 @@ export class AuthService {
     return user;
   }
 
-  // Tìm người dùng bằng email, ném lỗi nếu không tìm thấy
+  // Tìm người dùng theo email, nếu không tìm thấy thì ném lỗi
   private async findUserByEmail(email: string): Promise<User> {
     const user = await this.userService.findByEmail(email);
-    if (!user)
-      throw new HttpException('User not found', HttpStatus.UNAUTHORIZED);
+    if (!user) {
+      throw new HttpException('Người dùng không tồn tại', HttpStatus.NOT_FOUND);
+    }
     return user;
   }
 
-  // Kiểm tra mật khẩu người dùng
+  // Kiểm tra mật khẩu của người dùng
   private async verifyPassword(
     plainTextPassword: string,
     hashedPassword: string,
@@ -70,46 +84,51 @@ export class AuthService {
       plainTextPassword,
       hashedPassword,
     );
-    if (!isPasswordValid)
-      throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
+    if (!isPasswordValid) {
+      throw new HttpException(
+        'Thông tin đăng nhập không chính xác',
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
   }
 
-  // Hàm hỗ trợ để tạo token với thời gian hết hạn tùy chỉnh
+  // Hàm tạo token với thời gian hết hạn tùy chỉnh
   private createToken(
     user: { id: number; email: string },
     expiresIn: string,
   ): string {
-    try {
-      const payload = {
-        email: user.email,
-        sub: user.id,
-        iat: Math.floor(Date.now() / 1000), // Thời gian phát hành token
-      };
+    const payload = {
+      email: user.email,
+      sub: user.id,
+      iat: Math.floor(Date.now() / 1000), // Thời gian phát hành token
+    };
 
-      // Tạo token với thuật toán HS256
-      return this.jwtService.sign(payload, {
-        secret: this.secretKey, // Khóa bí mật từ biến môi trường
-        expiresIn,
-        algorithm: 'HS256', // Chỉ định thuật toán ký
-      });
-    } catch (error) {
-      console.error('Error creating token:', error); // Ghi log lỗi
-      throw new Error('Unable to create token'); // Không cung cấp chi tiết lỗi cho người dùng
-    }
+    return this.jwtService.sign(payload, {
+      secret: this.secretKey,
+      expiresIn,
+      algorithm: 'HS256',
+    });
   }
 
-  // Hàm tạo Access Token với thời gian hết hạn 15 phút
+  // Tạo Access Token với thời gian hết hạn 15 phút
   private createAccessToken(user: { id: number; email: string }): string {
     return this.createToken(user, '15m');
   }
 
-  // Hàm tạo Refresh Token với thời gian hết hạn 7 ngày
+  // Tạo Refresh Token với thời gian hết hạn 7 ngày
   private createRefreshToken(user: { id: number; email: string }): string {
     return this.createToken(user, '7d');
   }
 
-  // Kiểm tra Refresh Token và trả về payload nếu hợp lệ
+  // Kiểm tra tính hợp lệ của Refresh Token và trả về payload nếu hợp lệ
   private verifyRefreshToken(refreshToken: string): any {
-    return this.jwtService.verify(refreshToken);
+    try {
+      return this.jwtService.verify(refreshToken, { secret: this.secretKey });
+    } catch (error) {
+      throw new HttpException(
+        'Refresh token không hợp lệ hoặc đã hết hạn',
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
   }
 }

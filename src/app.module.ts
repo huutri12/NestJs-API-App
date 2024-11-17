@@ -33,11 +33,11 @@ import { RolesGuard } from './modules/auth/guard/RolesGuard';
   providers: [
     {
       provide: APP_GUARD,
-      useClass: JwtAuthGuard, // Đăng ký JWTAuthGuard làm Global Guard
+      useClass: JwtAuthGuard,
     },
     {
       provide: APP_GUARD,
-      useClass: RolesGuard, // Đăng ký RoleGuard nếu bạn muốn áp dụng cho tất cả các route
+      useClass: RolesGuard,
     },
   ],
 })

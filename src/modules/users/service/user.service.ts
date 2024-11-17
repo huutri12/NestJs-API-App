@@ -6,6 +6,7 @@ import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
 import { Role } from 'src/enums/role.enum';
+import { paginate, Pagination } from 'nestjs-typeorm-paginate';
 
 @Injectable()
 export class UserService {
@@ -31,12 +32,11 @@ export class UserService {
       password: createUserDto.password,
       email: createUserDto.email,
       fullName: createUserDto.fullName,
-      role: createUserDto.role || Role.USER, 
+      role: createUserDto.role || Role.USER,
     });
 
     // Save the user to the database
     return await this.userRepository.save(newUser);
-  
   }
 
   async findByEmail(email: string) {

@@ -25,10 +25,8 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async register(@Body() createUserDto: CreateUserDto) {
     const user = await this.authService.register(createUserDto);
-    return { message: 'Login successful', accessToken: user.accessToken };
+    return { message: 'Login successful' };
   }
-
-  // Endpoint cho người dùng đăng
 
   @Public()
   @Post('login')
@@ -38,7 +36,6 @@ export class AuthController {
     return { message: 'Login successful', ...tokens };
   }
 
-  // Endpoint để làm mới Access Token bằng Refresh Token
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
   async refreshToken(@Body('refreshToken') refreshToken: string) {
@@ -50,15 +47,12 @@ export class AuthController {
   @Roles(Role.ADMIN)
   @Get('profile')
   async getProfile(@Req() req: any) {
-    // req.user sẽ chứa thông tin người dùng từ payload của JWT
     return req.user;
   }
 
-  // Endpoint đăng xuất người dùng (tùy chọn, không bắt buộc nếu không lưu refresh token trong database)
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   async logout() {
-    // Nếu không lưu refresh token, có thể đơn giản trả về message
     return { message: 'Logout successful' };
   }
 }
