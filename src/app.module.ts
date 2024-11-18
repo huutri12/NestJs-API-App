@@ -3,9 +3,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './modules/users/user.module';
 import { AuthModule } from './modules/auth/auth.module';
-import { JwtAuthGuard } from './modules/auth/guard/JwtAuthGuard';
+import { JwtAuthGuard } from './modules/guard/JwtAuthGuard';
 import { APP_GUARD } from '@nestjs/core';
-import { RolesGuard } from './modules/auth/guard/RolesGuard';
+import { RolesGuard } from './modules/guard/RolesGuard';
 
 @Module({
   imports: [

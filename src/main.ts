@@ -2,8 +2,8 @@ import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import * as dotenv from 'dotenv';
-import { JwtAuthGuard } from './modules/auth/guard/JwtAuthGuard';
-import { RolesGuard } from './modules/auth/guard/RolesGuard';
+import { JwtAuthGuard } from './modules/guard/JwtAuthGuard';
+import { RolesGuard } from './modules/guard/RolesGuard';
 dotenv.config();
 
 async function bootstrap() {

@@ -5,10 +5,12 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { UserService } from '../../users/service/user.service';
 import { User } from 'src/modules/users/entities/user.entity';
 import * as bcrypt from 'bcrypt';
+import { Role } from 'src/enums/role.enum';
+import { Roles } from 'src/common/decorator/customize';
 
 @Injectable()
 export class AuthService {
-  private readonly secretKey = process.env.SECRETKEY;
+  //private readonly secretKey = process.env.SECRETKEY;
 
   constructor(
     private readonly userService: UserService,
@@ -17,7 +19,7 @@ export class AuthService {
 
   // Đăng ký người dùng mới
   async register(createUserDto: CreateUserDto) {
-    const user = await this.userService.create(createUserDto);
+    await this.userService.create(createUserDto);
     return {
       message: 'Đăng ký thành công, vui lòng đăng nhập để tiếp tục.',
     };
@@ -33,11 +35,11 @@ export class AuthService {
     };
   }
 
-  // Làm mới accessToken từ refreshToken
   async refreshAccessToken(refreshToken: string) {
     try {
       const { email, sub: userId } = this.verifyRefreshToken(refreshToken);
-      const user = await this.userService.findOne(userId); // Tìm người dùng
+      const user = await this.userService.findOne(userId);
+
       if (!user) {
         throw new HttpException(
           'Người dùng không tồn tại',
@@ -46,7 +48,7 @@ export class AuthService {
       }
       return {
         accessToken: this.createAccessToken(user),
-        refreshToken: this.createRefreshToken(user), // Cấp lại refresh token nếu cần
+        refreshToken: this.createRefreshToken(user),
       };
     } catch (error) {
       throw new HttpException(
@@ -104,26 +106,25 @@ export class AuthService {
     };
 
     return this.jwtService.sign(payload, {
-      secret: this.secretKey,
+      secret: process.env.SECRETKEY,
       expiresIn,
       algorithm: 'HS256',
     });
   }
 
-  // Tạo Access Token với thời gian hết hạn 15 phút
   private createAccessToken(user: { id: number; email: string }): string {
     return this.createToken(user, '15m');
   }
 
-  // Tạo Refresh Token với thời gian hết hạn 7 ngày
   private createRefreshToken(user: { id: number; email: string }): string {
     return this.createToken(user, '7d');
   }
 
-  // Kiểm tra tính hợp lệ của Refresh Token và trả về payload nếu hợp lệ
   private verifyRefreshToken(refreshToken: string): any {
     try {
-      return this.jwtService.verify(refreshToken, { secret: this.secretKey });
+      return this.jwtService.verify(refreshToken, {
+        secret: process.env.SECRETKEY,
+      });
     } catch (error) {
       throw new HttpException(
         'Refresh token không hợp lệ hoặc đã hết hạn',

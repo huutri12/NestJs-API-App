@@ -6,7 +6,6 @@ import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
 import { Role } from 'src/enums/role.enum';
-import { paginate, Pagination } from 'nestjs-typeorm-paginate';
 
 @Injectable()
 export class UserService {
@@ -19,14 +18,16 @@ export class UserService {
   async create(createUserDto: CreateUserDto): Promise<User> {
     createUserDto.password = await bcrypt.hash(createUserDto.password, 10);
 
-    // check the user exists
+    // Kiểm tra xem người dùng đã tồn tại trong DB hay chưa
     const userInDb = await this.userRepository.findOne({
       where: { email: createUserDto.email },
     });
+
     if (userInDb) {
       throw new HttpException('User đã tồn tại', HttpStatus.BAD_REQUEST);
     }
 
+    // Tạo user mới và lưu vào DB
     const newUser = this.userRepository.create({
       username: createUserDto.username,
       password: createUserDto.password,
@@ -35,12 +36,11 @@ export class UserService {
       role: createUserDto.role || Role.USER,
     });
 
-    // Save the user to the database
     return await this.userRepository.save(newUser);
   }
 
   async findByEmail(email: string) {
-    return this.userRepository.findOne({
+    return await this.userRepository.findOne({
       where: { email: email },
     });
   }
@@ -60,8 +60,34 @@ export class UserService {
     await this.userRepository.update(id, updateUserDto);
   }
 
-  // delete user
-  async remove(id: number): Promise<void> {
-    await this.userRepository.delete(id);
+  //xoa mem
+  async softDeleteUser(id: number): Promise<void> {
+    const user = await this.userRepository.findOne({ where: { id } });
+    if (!user) {
+      throw new HttpException('User không tồn tại', HttpStatus.NOT_FOUND);
+    }
+    await this.userRepository.softDelete(id);
+  }
+
+  //restore user
+  async restoreUser(id: number): Promise<void> {
+    const user = await this.userRepository.findOne({
+      where: { id },
+      withDeleted: true,
+    });
+    if (!user) {
+      throw new HttpException('User không tồn tại', HttpStatus.NOT_FOUND);
+    }
+    await this.userRepository.restore(id);
+  }
+
+  // List User have not xóa mềm
+  async getActiveUsers(): Promise<User[]> {
+    return this.userRepository.find();
+  }
+
+  //lay tat ca user (done softDeleteUser)
+  async getAllUsers(): Promise<User[]> {
+    return this.userRepository.find({ withDeleted: true });
   }
 }

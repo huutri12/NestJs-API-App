@@ -11,9 +11,8 @@ import {
 import { AuthService } from '../service/auth.service';
 import { CreateUserDto } from '../../users/dto/create-user.dto';
 import { LoginUserDto } from '../../users/dto/login-user.dto';
-import { JwtAuthGuard } from '../guard/JwtAuthGuard';
+import { JwtAuthGuard } from '../../guard/JwtAuthGuard';
 import { Public, Roles } from 'src/common/decorator/customize';
-import { RolesGuard } from '../guard/RolesGuard';
 import { Role } from 'src/enums/role.enum';
 
 @UseGuards(JwtAuthGuard)
@@ -21,11 +20,12 @@ import { Role } from 'src/enums/role.enum';
 export class AuthController {
   constructor(private authService: AuthService) {}
 
+  //@Roles(Role.ADMIN)
   @Post('register')
   @HttpCode(HttpStatus.OK)
   async register(@Body() createUserDto: CreateUserDto) {
-    const user = await this.authService.register(createUserDto);
-    return { message: 'Login successful' };
+    await this.authService.register(createUserDto);
+    return { message: 'Registration successful' };
   }
 
   @Public()
@@ -39,12 +39,11 @@ export class AuthController {
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
   async refreshToken(@Body('refreshToken') refreshToken: string) {
+    console.log(refreshToken);
     const accessToken = await this.authService.refreshAccessToken(refreshToken);
     return { message: 'Token refreshed', accessToken };
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
   @Get('profile')
   async getProfile(@Req() req: any) {
     return req.user;

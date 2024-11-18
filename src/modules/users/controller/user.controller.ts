@@ -9,19 +9,17 @@ import {
   UseGuards,
   Request,
   Query,
+  Patch,
 } from '@nestjs/common';
 import { UserService } from '../service/user.service';
 import { User } from '../entities/user.entity';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
-import { JwtAuthGuard } from 'src/modules/auth/guard/JwtAuthGuard';
 import { Roles } from 'src/common/decorator/customize';
 import { Role } from 'src/enums/role.enum';
-import { query } from 'express';
-import { FilterUserDto } from '../dto/filter-user.dto';
-import { RolesGuard } from 'src/modules/auth/guard/RolesGuard';
+import { RolesGuard } from 'src/modules/guard/RolesGuard';
+import { JwtAuthGuard } from 'src/modules/guard/JwtAuthGuard';
 
-@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -34,9 +32,10 @@ export class UserController {
 
   // Route lấy tất cả users
   @Roles(Role.ADMIN)
-  @Get('admin')
+  @Get('all')
+  @UseGuards(RolesGuard, JwtAuthGuard)
   findAll(): Promise<User[]> {
-    return this.userService.findAll();
+    return this.userService.getAllUsers();
   }
 
   // Route lấy user theo ID
@@ -54,9 +53,28 @@ export class UserController {
     return this.userService.updateUser(+id, updateUserDto);
   }
 
-  // Route xóa user
+  // softDelete user
+  @UseGuards(RolesGuard, JwtAuthGuard)
+  @Roles(Role.ADMIN)
   @Delete(':id')
-  remove(@Param('id') id: string): Promise<void> {
-    return this.userService.remove(+id);
+  async remove(@Param('id') id: number): Promise<string> {
+    await this.userService.softDeleteUser(+id);
+    return `User with ID ${id} has been soft deleted`;
+  }
+
+  // restore user
+  @UseGuards(RolesGuard, JwtAuthGuard)
+  @Roles(Role.ADMIN)
+  @Patch(':id/restore')
+  async restore(@Param('id') id: number): Promise<string> {
+    await this.userService.restoreUser(id);
+    return `User with ID ${id} has been restored`;
+  }
+
+  @UseGuards(RolesGuard, JwtAuthGuard)
+  @Roles(Role.ADMIN)
+  @Get()
+  async getActiveUsers(): Promise<any> {
+    return this.userService.getActiveUsers();
   }
 }
