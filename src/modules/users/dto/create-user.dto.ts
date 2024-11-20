@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import {
   IsEmail,
   IsEnum,
@@ -10,10 +11,13 @@ import { REGEX } from 'src/common/constans/regex.constants';
 import { Role } from 'src/enums/role.enum';
 
 export class CreateUserDto {
+
+  @ApiProperty()
   @IsString()
   @IsNotEmpty({ message: 'UserName không được để trống' })
   username: string;
 
+  @ApiProperty()
   @IsEmail({}, { message: 'Email không hợp lệ' })
   @IsNotEmpty({ message: 'Email không được để trống' })
   @Matches(REGEX.EMAIL, {
@@ -21,10 +25,13 @@ export class CreateUserDto {
   })
   email: string;
 
+  
+  @ApiProperty()
   @IsString()
   fullName: string;
 
   @IsString()
+  @ApiProperty()
   @IsNotEmpty()
   @Matches(REGEX.PASSWORD, {
     message:
@@ -32,6 +39,7 @@ export class CreateUserDto {
   })
   password: string;
 
+  @ApiProperty()
   @IsOptional()
   @IsEnum(Role)
   role?: Role = Role.USER;

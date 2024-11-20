@@ -12,15 +12,15 @@ import { AuthService } from '../service/auth.service';
 import { CreateUserDto } from '../../users/dto/create-user.dto';
 import { LoginUserDto } from '../../users/dto/login-user.dto';
 import { JwtAuthGuard } from '../../guard/JwtAuthGuard';
-import { Public, Roles } from 'src/common/decorator/customize';
-import { Role } from 'src/enums/role.enum';
+import { Public } from 'src/common/decorator/customize';
+import { ApiBody, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('auth')
 @UseGuards(JwtAuthGuard)
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
-  //@Roles(Role.ADMIN)
   @Public()
   @Post('register')
   @HttpCode(HttpStatus.OK)

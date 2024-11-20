@@ -1,7 +1,9 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsNotEmpty, IsString, Matches } from 'class-validator';
 import { REGEX } from 'src/common/constans/regex.constants';
 
 export class LoginUserDto {
+  @ApiProperty()
   @IsEmail({}, { message: 'Email không hợp lệ' })
   @IsNotEmpty({ message: 'Email không được để trống' })
   @Matches(REGEX.EMAIL, {
@@ -9,6 +11,7 @@ export class LoginUserDto {
   })
   email: string;
 
+  @ApiProperty()
   @IsString()
   @IsNotEmpty({ message: 'Password không được để trống' })
   @Matches(REGEX.PASSWORD, {

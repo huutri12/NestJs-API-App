@@ -9,8 +9,6 @@ import {
   UseGuards,
   Query,
   Patch,
-  ValidationPipe,
-  UsePipes,
 } from '@nestjs/common';
 import { UserService } from '../service/user.service';
 import { User } from '../entities/user.entity';
@@ -21,12 +19,13 @@ import { Role } from 'src/enums/role.enum';
 import { RolesGuard } from 'src/modules/guard/RolesGuard';
 import { JwtAuthGuard } from 'src/modules/guard/JwtAuthGuard';
 import { PaginationDto } from '../dto/pagination-use.dto';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('users')
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  // Route thêm user mới
   @Post()
   create(@Body() createUserDto: CreateUserDto): Promise<User> {
     return this.userService.create(createUserDto);
@@ -34,7 +33,6 @@ export class UserController {
 
   @Roles(Role.ADMIN)
   @Get('paginated')
-  // @UsePipes(ValidationPipe)
   async getPaginatedUsers(@Query() paginationDto: PaginationDto) {
     const { page = 1, limit = 5, search = '' } = paginationDto;
     return await this.userService.getPaginatedUsersWithSearch(
@@ -43,7 +41,7 @@ export class UserController {
       search,
     );
   }
-  // Route lấy tất cả users
+
   @Roles(Role.ADMIN)
   @Get('all')
   @UseGuards(RolesGuard, JwtAuthGuard)
@@ -51,13 +49,11 @@ export class UserController {
     return this.userService.getAllUsers();
   }
 
-  // Route lấy user theo ID
   @Get(':id')
   findOne(@Param('id') id: string): Promise<User> {
     return this.userService.findOne(+id);
   }
 
-  // Route cập nhật user
   @Put(':id')
   update(
     @Param('id') id: string,
