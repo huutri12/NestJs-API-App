@@ -7,9 +7,10 @@ import {
   Put,
   Delete,
   UseGuards,
-  Request,
   Query,
   Patch,
+  ValidationPipe,
+  UsePipes,
 } from '@nestjs/common';
 import { UserService } from '../service/user.service';
 import { User } from '../entities/user.entity';
@@ -19,6 +20,7 @@ import { Roles } from 'src/common/decorator/customize';
 import { Role } from 'src/enums/role.enum';
 import { RolesGuard } from 'src/modules/guard/RolesGuard';
 import { JwtAuthGuard } from 'src/modules/guard/JwtAuthGuard';
+import { PaginationDto } from '../dto/pagination-use.dto';
 
 @Controller('users')
 export class UserController {
@@ -30,6 +32,17 @@ export class UserController {
     return this.userService.create(createUserDto);
   }
 
+  @Roles(Role.ADMIN)
+  @Get('paginated')
+  // @UsePipes(ValidationPipe)
+  async getPaginatedUsers(@Query() paginationDto: PaginationDto) {
+    const { page = 1, limit = 5, search = '' } = paginationDto;
+    return await this.userService.getPaginatedUsersWithSearch(
+      page,
+      limit,
+      search,
+    );
+  }
   // Route lấy tất cả users
   @Roles(Role.ADMIN)
   @Get('all')

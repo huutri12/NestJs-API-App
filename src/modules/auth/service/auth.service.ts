@@ -5,19 +5,14 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { UserService } from '../../users/service/user.service';
 import { User } from 'src/modules/users/entities/user.entity';
 import * as bcrypt from 'bcrypt';
-import { Role } from 'src/enums/role.enum';
-import { Roles } from 'src/common/decorator/customize';
 
 @Injectable()
 export class AuthService {
-  //private readonly secretKey = process.env.SECRETKEY;
-
   constructor(
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
   ) {}
 
-  // Đăng ký người dùng mới
   async register(createUserDto: CreateUserDto) {
     await this.userService.create(createUserDto);
     return {
@@ -25,7 +20,6 @@ export class AuthService {
     };
   }
 
-  // Đăng nhập và trả về accessToken và refreshToken
   async login({ email, password }: LoginUserDto) {
     const user = await this.validateUserCredentials(email, password);
     return {
@@ -37,7 +31,7 @@ export class AuthService {
 
   async refreshAccessToken(refreshToken: string) {
     try {
-      const { email, sub: userId } = this.verifyRefreshToken(refreshToken);
+      const { sub: userId } = this.verifyRefreshToken(refreshToken);
       const user = await this.userService.findOne(userId);
 
       if (!user) {
@@ -52,13 +46,12 @@ export class AuthService {
       };
     } catch (error) {
       throw new HttpException(
-        'Refresh token không hợp lệ hoặc đã hết hạn',
+        'Refresh token không hợp lệ',
         HttpStatus.UNAUTHORIZED,
       );
     }
   }
 
-  // Kiểm tra thông tin đăng nhập của người dùng
   private async validateUserCredentials(
     email: string,
     password: string,
@@ -68,7 +61,6 @@ export class AuthService {
     return user;
   }
 
-  // Tìm người dùng theo email, nếu không tìm thấy thì ném lỗi
   private async findUserByEmail(email: string): Promise<User> {
     const user = await this.userService.findByEmail(email);
     if (!user) {
@@ -77,7 +69,6 @@ export class AuthService {
     return user;
   }
 
-  // Kiểm tra mật khẩu của người dùng
   private async verifyPassword(
     plainTextPassword: string,
     hashedPassword: string,
@@ -98,32 +89,33 @@ export class AuthService {
   private createToken(
     user: { id: number; email: string },
     expiresIn: string,
+    secret: string,
   ): string {
     const payload = {
       email: user.email,
       sub: user.id,
-      iat: Math.floor(Date.now() / 1000), // Thời gian phát hành token
+      iat: Math.floor(Date.now() / 1000),
     };
 
     return this.jwtService.sign(payload, {
-      secret: process.env.SECRETKEY,
+      secret,
       expiresIn,
       algorithm: 'HS256',
     });
   }
 
   private createAccessToken(user: { id: number; email: string }): string {
-    return this.createToken(user, '15m');
+    return this.createToken(user, '30m', process.env.SECRETKEY);
   }
 
   private createRefreshToken(user: { id: number; email: string }): string {
-    return this.createToken(user, '7d');
+    return this.createToken(user, '7d', process.env.SECRETKEY_REFRESH);
   }
 
   private verifyRefreshToken(refreshToken: string): any {
     try {
       return this.jwtService.verify(refreshToken, {
-        secret: process.env.SECRETKEY,
+        secret: process.env.SECRETKEY_REFRESH,
       });
     } catch (error) {
       throw new HttpException(

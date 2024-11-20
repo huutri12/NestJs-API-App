@@ -1,5 +1,7 @@
+import { profile } from 'console';
 import { Role } from 'src/enums/role.enum';
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { Profile } from 'src/modules/profile/entities/profile.entity';
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 
 @Entity('user')
 export class User {
@@ -29,4 +31,7 @@ export class User {
 
   @Column({ type: 'enum', enum: Role, default: Role.USER })
   role: Role;
+
+  @OneToOne(() => Profile, (profile) => profile.user)
+  profile: Profile;
 }

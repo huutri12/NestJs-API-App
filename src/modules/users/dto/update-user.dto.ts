@@ -1,4 +1,5 @@
-import { IsEmail, IsOptional, IsString } from 'class-validator';
+import { IsEmail, IsOptional, IsString, Matches } from 'class-validator';
+import { REGEX } from 'src/common/constans/regex.constants';
 
 export class UpdateUserDto {
   @IsString()
@@ -7,9 +8,8 @@ export class UpdateUserDto {
 
   @IsEmail()
   @IsOptional()
+  @Matches(REGEX.EMAIL, {
+    message: 'Email không hợp lệ, vui lòng nhập một địa chỉ email hợp lệ',
+  })
   email: string;
-
-  @IsString()
-  @IsOptional()
-  password: string;
 }

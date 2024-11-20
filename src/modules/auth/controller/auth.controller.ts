@@ -21,9 +21,12 @@ export class AuthController {
   constructor(private authService: AuthService) {}
 
   //@Roles(Role.ADMIN)
+  @Public()
   @Post('register')
   @HttpCode(HttpStatus.OK)
   async register(@Body() createUserDto: CreateUserDto) {
+    console.log(createUserDto);
+
     await this.authService.register(createUserDto);
     return { message: 'Registration successful' };
   }

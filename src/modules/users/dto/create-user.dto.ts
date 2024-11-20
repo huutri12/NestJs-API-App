@@ -1,4 +1,11 @@
-import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString, Matches } from 'class-validator';
+import {
+  IsEmail,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Matches,
+} from 'class-validator';
 import { REGEX } from 'src/common/constans/regex.constants';
 import { Role } from 'src/enums/role.enum';
 
@@ -14,6 +21,7 @@ export class CreateUserDto {
   })
   email: string;
 
+  @IsString()
   fullName: string;
 
   @IsString()
@@ -25,6 +33,6 @@ export class CreateUserDto {
   password: string;
 
   @IsOptional()
-  @IsEnum(Role) 
-  role?: Role = Role.USER;  
+  @IsEnum(Role)
+  role?: Role = Role.USER;
 }

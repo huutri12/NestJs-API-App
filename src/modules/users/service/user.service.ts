@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { ILike, Like, Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
@@ -17,25 +17,13 @@ export class UserService {
   // add user
   async create(createUserDto: CreateUserDto): Promise<User> {
     createUserDto.password = await bcrypt.hash(createUserDto.password, 10);
-
-    // Kiểm tra xem người dùng đã tồn tại trong DB hay chưa
     const userInDb = await this.userRepository.findOne({
       where: { email: createUserDto.email },
     });
-
     if (userInDb) {
       throw new HttpException('User đã tồn tại', HttpStatus.BAD_REQUEST);
     }
-
-    // Tạo user mới và lưu vào DB
-    const newUser = this.userRepository.create({
-      username: createUserDto.username,
-      password: createUserDto.password,
-      email: createUserDto.email,
-      fullName: createUserDto.fullName,
-      role: createUserDto.role || Role.USER,
-    });
-
+    const newUser = this.userRepository.create(createUserDto);
     return await this.userRepository.save(newUser);
   }
 
@@ -43,11 +31,6 @@ export class UserService {
     return await this.userRepository.findOne({
       where: { email: email },
     });
-  }
-
-  // get all users
-  async findAll(): Promise<User[]> {
-    return this.userRepository.find();
   }
 
   // get user in ID
@@ -81,13 +64,51 @@ export class UserService {
     await this.userRepository.restore(id);
   }
 
-  // List User have not xóa mềm
+  // List User after soft delete
   async getActiveUsers(): Promise<User[]> {
     return this.userRepository.find();
   }
 
-  //lay tat ca user (done softDeleteUser)
+  //List All user (done softDeleteUser)
   async getAllUsers(): Promise<User[]> {
     return this.userRepository.find({ withDeleted: true });
+  }
+
+  //Paginate User, Search User
+  async getPaginatedUsersWithSearch(
+    page: number,
+    limit: number,
+    search: string,
+  ): Promise<{
+    data: User[];
+    total: number;
+    page: number;
+    limit: number;
+  }> {
+    if (page < 1 || limit < 1) {
+      throw new Error('Page and limit must be greater than or equal to 1');
+    }
+    const whereCondition = search
+      ? [
+          { username: ILike(`%${search}%`) },
+          { email: ILike(`%${search}%`) },
+          { fullName: ILike(`%${search}%`) },
+        ]
+      : {};
+
+    const [data, total] = await this.userRepository.findAndCount({
+      where: whereCondition,
+      skip: (page - 1) * limit,
+      take: limit,
+      order: { id: 'ASC' },
+    });
+
+    // Trả về kết quả
+    return {
+      data,
+      total,
+      page,
+      limit,
+    };
   }
 }

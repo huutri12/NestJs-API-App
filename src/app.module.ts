@@ -6,6 +6,9 @@ import { AuthModule } from './modules/auth/auth.module';
 import { JwtAuthGuard } from './modules/guard/JwtAuthGuard';
 import { APP_GUARD } from '@nestjs/core';
 import { RolesGuard } from './modules/guard/RolesGuard';
+import { ProfileModule } from './modules/profile/profile.module';
+import { Profile } from './modules/profile/entities/profile.entity';
+import { User } from './modules/users/entities/user.entity';
 
 @Module({
   imports: [
@@ -22,13 +25,15 @@ import { RolesGuard } from './modules/guard/RolesGuard';
         username: configService.get('POSTGRES_USER'),
         password: configService.get('POSTGRES_PASSWORD'),
         database: configService.get('POSTGRES_DB'),
-        entities: [],
+        entities: [Profile, User],
+        migrations: ['src/migrations/*.ts'], 
         synchronize: true,
         autoLoadEntities: true,
       }),
     }),
     UserModule,
     AuthModule,
+    ProfileModule,
   ],
   providers: [
     {

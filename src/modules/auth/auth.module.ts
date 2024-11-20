@@ -15,7 +15,6 @@ import { JwtAuthGuard } from '../guard/JwtAuthGuard';
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({
       secret: process.env.SECRETKEY || 'defaultSecretKey',
-      signOptions: { expiresIn: '1h' },
     }),
     UserModule,
   ],

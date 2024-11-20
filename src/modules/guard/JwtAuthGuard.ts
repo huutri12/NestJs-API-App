@@ -56,7 +56,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
         `Token verification failed: ${error.message}`,
         error.stack,
       );
-      throw new UnauthorizedException('Invalid token');
+      throw new UnauthorizedException('Token không hợp lệ ');
     }
 
     return true;

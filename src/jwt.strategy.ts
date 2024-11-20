@@ -1,6 +1,5 @@
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { AuthService } from './modules/auth/service/auth.service';
 import { Injectable } from '@nestjs/common';
 import { Role } from './enums/role.enum';
 
