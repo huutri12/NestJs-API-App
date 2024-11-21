@@ -9,6 +9,7 @@ import { RolesGuard } from './modules/guard/RolesGuard';
 import { ProfileModule } from './modules/profile/profile.module';
 import { Profile } from './modules/profile/entities/profile.entity';
 import { User } from './modules/users/entities/user.entity';
+import { FileModule } from './files/file.module';
 
 @Module({
   imports: [
@@ -26,7 +27,7 @@ import { User } from './modules/users/entities/user.entity';
         password: configService.get('POSTGRES_PASSWORD'),
         database: configService.get('POSTGRES_DB'),
         entities: [Profile, User],
-        migrations: ['src/migrations/*.ts'], 
+        migrations: ['src/migrations/*.ts'],
         synchronize: true,
         autoLoadEntities: true,
       }),
@@ -34,6 +35,7 @@ import { User } from './modules/users/entities/user.entity';
     UserModule,
     AuthModule,
     ProfileModule,
+    FileModule,
   ],
   providers: [
     {

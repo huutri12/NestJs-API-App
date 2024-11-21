@@ -44,6 +44,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
         secret: process.env.SECRETKEY,
       });
 
+      //profile
       request.user = payload;
       this.logger.log(`Verified user: ${JSON.stringify(payload)}`);
     } catch (error) {

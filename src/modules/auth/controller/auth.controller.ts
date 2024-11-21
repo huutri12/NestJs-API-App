@@ -13,7 +13,7 @@ import { CreateUserDto } from '../../users/dto/create-user.dto';
 import { LoginUserDto } from '../../users/dto/login-user.dto';
 import { JwtAuthGuard } from '../../guard/JwtAuthGuard';
 import { Public } from 'src/common/decorator/customize';
-import { ApiBody, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 
 @ApiTags('auth')
 @UseGuards(JwtAuthGuard)
@@ -26,7 +26,6 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async register(@Body() createUserDto: CreateUserDto) {
     console.log(createUserDto);
-
     await this.authService.register(createUserDto);
     return { message: 'Registration successful' };
   }
